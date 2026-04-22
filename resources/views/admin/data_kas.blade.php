@@ -34,14 +34,53 @@
 
     <div class="admin-section">
         <h2>Daftar Transaksi</h2>
+
+        <!-- Search Form -->
+        <div class="search-container" style="margin-bottom: 1.5rem;">
+            <form method="GET" action="{{ route('admin.data-kas') }}" class="search-form">
+                <div class="search-input-group">
+                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari berdasarkan deskripsi, tipe, atau nama pencatat..." class="search-input">
+                    <button type="submit" class="btn btn-primary search-btn">🔍 Cari</button>
+                    @if(request('search'))
+                        <a href="{{ route('admin.data-kas') }}" class="btn btn-secondary clear-btn">❌ Clear</a>
+                    @endif
+                </div>
+                @if(request('sort_by'))
+                    <input type="hidden" name="sort_by" value="{{ request('sort_by') }}">
+                    <input type="hidden" name="sort_direction" value="{{ request('sort_direction') }}">
+                @endif
+            </form>
+        </div>
+
         <div class="table-responsive">
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>Tanggal</th>
-                        <th>Tipe</th>
+                        <th>
+                            <a href="{{ route('admin.data-kas', array_merge(request()->query(), ['sort_by' => 'tanggal', 'sort_direction' => (request('sort_by') === 'tanggal' && request('sort_direction') === 'desc') ? 'asc' : 'desc'])) }}" class="sort-link">
+                                Tanggal
+                                @if(request('sort_by') === 'tanggal')
+                                    {{ request('sort_direction') === 'desc' ? '↓' : '↑' }}
+                                @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('admin.data-kas', array_merge(request()->query(), ['sort_by' => 'jenis', 'sort_direction' => (request('sort_by') === 'jenis' && request('sort_direction') === 'desc') ? 'asc' : 'desc'])) }}" class="sort-link">
+                                Tipe
+                                @if(request('sort_by') === 'jenis')
+                                    {{ request('sort_direction') === 'desc' ? '↓' : '↑' }}
+                                @endif
+                            </a>
+                        </th>
                         <th>Deskripsi</th>
-                        <th>Jumlah</th>
+                        <th>
+                            <a href="{{ route('admin.data-kas', array_merge(request()->query(), ['sort_by' => 'jumlah', 'sort_direction' => (request('sort_by') === 'jumlah' && request('sort_direction') === 'desc') ? 'asc' : 'desc'])) }}" class="sort-link">
+                                Jumlah
+                                @if(request('sort_by') === 'jumlah')
+                                    {{ request('sort_direction') === 'desc' ? '↓' : '↑' }}
+                                @endif
+                            </a>
+                        </th>
                         <th>Dicatat Oleh</th>
                         <th>Aksi</th>
                     </tr>

@@ -90,8 +90,24 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->group(function () {
 
     // Kas Data Management - Full CRUD
     Route::get('/data-kas', function () {
-        $transactions = \App\Models\Kas::orderBy('tanggal', 'desc')->get();
-        return view('admin.data_kas', compact('transactions'));
+        $sortBy = request('sort_by', 'tanggal');
+        $sortDirection = request('sort_direction', 'desc');
+        $search = request('search');
+
+        $query = \App\Models\Kas::query();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('keterangan', 'like', '%' . $search . '%')
+                  ->orWhere('jenis', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function ($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        $transactions = $query->orderBy($sortBy, $sortDirection)->get();
+        return view('admin.data_kas', compact('transactions', 'sortBy', 'sortDirection', 'search'));
     })->name('admin.data-kas');
 
     // Create Transaction Form
@@ -115,8 +131,22 @@ Route::middleware(['auth', 'admin'])->prefix('/admin')->group(function () {
 
     // Activity History - Read-only
     Route::get('/history', function () {
-        $activities = \App\Models\Activity::with('user:id,name')->orderBy('created_at', 'desc')->get();
-        return view('admin.history', compact('activities'));
+        $search = request('search');
+
+        $query = \App\Models\Activity::with('user:id,name');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', '%' . $search . '%')
+                  ->orWhere('action', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function ($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        $activities = $query->orderBy('created_at', 'desc')->get();
+        return view('admin.history', compact('activities', 'search'));
     })->name('admin.history');
 
     // Admin User Role Management
